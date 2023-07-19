@@ -27,6 +27,9 @@ class SuperCalc(QMainWindow):
         self.ui.btn_9.clicked.connect(self.func_9)
         self.ui.btn_0.clicked.connect(self.func_0)
         self.ui.btn_add.clicked.connect(self.func_add)
+        self.ui.btn_minus.clicked.connect(self.func_minus)
+        self.ui.btn_aster.clicked.connect(self.func_mult)
+        self.ui.btn_div.clicked.connect(self.func_div)
     def func_1(self):
         global buffer_s
         buffer_s += '1'
@@ -69,30 +72,47 @@ class SuperCalc(QMainWindow):
         self.ui.lcd.display(buffer_s)
 
     def func_add(self):
-        global buffer_s, buffer1, buffer2, oper, oper_history
+        global buffer_s, oper
         oper='+'
         if buffer_s!='':
-            buffer=int(buffer_s)
-            buffer1+=buffer
-            buffer_s = str(buffer1)
-            #self.history_display()
-            self.ui.lcd.display(buffer_s)
-            buffer_s = ''
+            self.func_oper()
+    def func_minus(self):
+        global buffer_s, oper
+        oper='-'
+        if buffer_s!='':
+            self.func_oper()
+    def func_mult(self):
+        global buffer_s, oper
+        oper='*'
+        if buffer_s!='':
+            self.func_oper()
+    def func_div(self):
+        global buffer_s, oper
+        oper='/'
+        if buffer_s!='':
+            self.func_oper()
 
     def history_display(self):
-        global oper_history
-        oper_history.insert(0, f'{buffer_s}  {oper}')
-        if len(oper_history)>10:
-            oper_history.pop(10)
-        self.ui.history.clear()
-        for i in oper_history:
-            self.ui.history.append(i)
+        global buffer_s
+        self.ui.history.append(i)
 
+    def func_oper(self):
+        global oper, buffer_s, buffer1, buffer2
+        buffer = int(buffer_s)
+        if oper == '+':
+            buffer1 += buffer
+        if oper == '-':
+            buffer1 -= buffer
+        if oper == '*':
+            buffer1 *= buffer
+        if oper == '/':
+            buffer1 /= buffer
 
-
-
-
-    #def oper(self):
+        buffer_s = str(buffer1)
+        # self.history_display()
+        self.ui.lcd.display(buffer_s)
+        buffer2 = buffer1
+        buffer_s = ''
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
