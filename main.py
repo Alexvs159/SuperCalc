@@ -126,6 +126,7 @@ class SuperCalc(QMainWindow):
                 buffer = float(buffer_s)
             else:
                 buffer = int(buffer_s)
+            print ('!!!', buffer)
             if oper == '+':
                 buffer1 += buffer
             if oper == '-':
@@ -134,22 +135,23 @@ class SuperCalc(QMainWindow):
                 buffer1 *= buffer
             if oper == '/':
                 buffer1 /= buffer
-                buffer2=buffer1
+            buffer2=buffer
+            print ('buf2!!', buffer2)
         elif wasequal:
             print (oper)
             print (buffer1)
             print (buffer2)
             if oper == '+':
-                buffer2 += buffer1
+                buffer1 += buffer2
             if oper == '-':
-                buffer2 -= buffer1
+                buffer1 -= buffer2
             if oper == '*':
-                buffer2 *= buffer1
+                buffer1 *= buffer2
             if oper == '/':
-                buffer2 /= buffer1
-            labeltext.append(str(buffer1))
-            buffer_s=str(buffer2)
-        self.ui.lcd.display(buffer1)
+                buffer1 /= buffer2
+            labeltext.append(str(buffer2))
+
+        self.ui.lcd.display(str(buffer1))
         labeltext.append(buffer_s)
         labeltext.append(oper)
         labelstr = ''
@@ -159,10 +161,8 @@ class SuperCalc(QMainWindow):
         buffer_s = ''
         isbuffer = True
         wasequal = True
-
-
-
-
+        print ('buf1 in eq end', buffer1)
+        print('buf2 in eq end', buffer2)
 
     def func_oper(self):
         global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
@@ -194,8 +194,11 @@ class SuperCalc(QMainWindow):
             labelstr+=i+' '
         self.ui.label.setText(labelstr)
         buffer_s = ''
-        buffer2=buffer1
+        #buffer2=buffer1
         isbuffer=True
+        print ('buf1 in oper', buffer1)
+        print('buf2 in oper', buffer2)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
