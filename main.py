@@ -3,12 +3,11 @@ import sys
 from window import Ui_MainWindow
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMainWindow
-operations=['+','-','*','/']
+isbuffer=False
 buffer_s = ''
-buffer1=0
+buffer1=''
 buffer2=0
-oper=''
-oper_history=[]
+labeltext=[]
 
 class SuperCalc(QMainWindow):
 
@@ -16,6 +15,7 @@ class SuperCalc(QMainWindow):
         super(SuperCalc, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+# Привязка кнопок к функциям
         self.ui.btn_1.clicked.connect(self.func_1)
         self.ui.btn_2.clicked.connect(self.func_2)
         self.ui.btn_3.clicked.connect(self.func_3)
@@ -30,6 +30,8 @@ class SuperCalc(QMainWindow):
         self.ui.btn_minus.clicked.connect(self.func_minus)
         self.ui.btn_aster.clicked.connect(self.func_mult)
         self.ui.btn_div.clicked.connect(self.func_div)
+        self.ui.btn_calc.clicked.connect(self.func_equal)
+#Функции кнопок
     def func_1(self):
         global buffer_s
         buffer_s += '1'
@@ -76,43 +78,82 @@ class SuperCalc(QMainWindow):
         oper='+'
         if buffer_s!='':
             self.func_oper()
+        else:
+             labelstr=''
+             labeltext[-1] = oper
+             for i in labeltext:
+                 labelstr += i + ' '
+             self.ui.label.setText(labelstr)
     def func_minus(self):
-        global buffer_s, oper
+        global buffer_s, oper, labeltext
         oper='-'
         if buffer_s!='':
             self.func_oper()
+        else:
+             labelstr=''
+             labeltext[-1] = oper
+             for i in labeltext:
+                 labelstr += i + ' '
+             self.ui.label.setText(labelstr)
     def func_mult(self):
         global buffer_s, oper
         oper='*'
         if buffer_s!='':
             self.func_oper()
+        else:
+             labelstr=''
+             labeltext[-1] = oper
+             for i in labeltext:
+                 labelstr += i + ' '
+             self.ui.label.setText(labelstr)
     def func_div(self):
-        global buffer_s, oper
+        global oper
         oper='/'
         if buffer_s!='':
             self.func_oper()
+        else:
+             labelstr=''
+             labeltext[-1] = oper
+             for i in labeltext:
+                 labelstr += i + ' '
+             self.ui.label.setText(labelstr)
+    def func_equal(self):
+        global oper, buffer_s, buffer1, isbuffer, labeltext, wasequal
+        wasequal = True
 
-    def history_display(self):
-        global buffer_s
-        self.ui.history.append(i)
+
 
     def func_oper(self):
-        global oper, buffer_s, buffer1, buffer2
-        buffer = int(buffer_s)
-        if oper == '+':
-            buffer1 += buffer
-        if oper == '-':
-            buffer1 -= buffer
-        if oper == '*':
-            buffer1 *= buffer
-        if oper == '/':
-            buffer1 /= buffer
-
-        buffer_s = str(buffer1)
+        global oper, buffer_s, buffer1, isbuffer, labeltext
+        if isbuffer:  # Проверяем наличие числа в буфере
+            if float(int(buffer_s))<float(buffer_s):  # проверяем, float или int
+                buffer = float(buffer_s)
+            else:
+                buffer = int(buffer_s)
+            if oper == '+':
+                buffer1 += buffer
+            if oper == '-':
+                buffer1 -= buffer
+            if oper == '*':
+                buffer1 *= buffer
+            if oper == '/':
+                buffer1 /= buffer
+        else:
+            if float(int(buffer_s))<float(buffer_s):
+                buffer1 = float(buffer_s)
+            else:
+                buffer1 = int(buffer_s)
+        # buffer_s = str(buffer1)
         # self.history_display()
-        self.ui.lcd.display(buffer_s)
-        buffer2 = buffer1
+        self.ui.lcd.display(buffer1)
+        labeltext.append(buffer_s)
+        labeltext.append(oper)
+        labelstr=''
+        for i in labeltext:
+            labelstr+=i+' '
+        self.ui.label.setText(labelstr)
         buffer_s = ''
+        isbuffer=True
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
