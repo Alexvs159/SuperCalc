@@ -4,6 +4,7 @@ from window import Ui_MainWindow
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMainWindow
 isbuffer=False
+wasequal=False
 buffer_s = ''
 buffer1=''
 buffer2=0
@@ -117,14 +118,54 @@ class SuperCalc(QMainWindow):
              for i in labeltext:
                  labelstr += i + ' '
              self.ui.label.setText(labelstr)
+
     def func_equal(self):
-        global oper, buffer_s, buffer1, isbuffer, labeltext, wasequal
+        global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext, wasequal
+        if not wasequal and isbuffer:
+            if float(int(buffer_s))<float(buffer_s):  # проверяем, float или int
+                buffer = float(buffer_s)
+            else:
+                buffer = int(buffer_s)
+            if oper == '+':
+                buffer1 += buffer
+            if oper == '-':
+                buffer1 -= buffer
+            if oper == '*':
+                buffer1 *= buffer
+            if oper == '/':
+                buffer1 /= buffer
+                buffer2=buffer1
+        elif wasequal:
+            print (oper)
+            print (buffer1)
+            print (buffer2)
+            if oper == '+':
+                buffer2 += buffer1
+            if oper == '-':
+                buffer2 -= buffer1
+            if oper == '*':
+                buffer2 *= buffer1
+            if oper == '/':
+                buffer2 /= buffer1
+            labeltext.append(str(buffer1))
+            buffer_s=str(buffer2)
+        self.ui.lcd.display(buffer1)
+        labeltext.append(buffer_s)
+        labeltext.append(oper)
+        labelstr = ''
+        for i in labeltext:
+            labelstr += i + ' '
+        self.ui.label.setText(labelstr)
+        buffer_s = ''
+        isbuffer = True
         wasequal = True
 
 
 
+
+
     def func_oper(self):
-        global oper, buffer_s, buffer1, isbuffer, labeltext
+        global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
         if isbuffer:  # Проверяем наличие числа в буфере
             if float(int(buffer_s))<float(buffer_s):  # проверяем, float или int
                 buffer = float(buffer_s)
@@ -153,6 +194,7 @@ class SuperCalc(QMainWindow):
             labelstr+=i+' '
         self.ui.label.setText(labelstr)
         buffer_s = ''
+        buffer2=buffer1
         isbuffer=True
 
 if __name__ == "__main__":
