@@ -19,16 +19,16 @@ class SuperCalc(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         # Привязка кнопок к функциям
-        self.ui.btn_1.clicked.connect(self.func_1)
-        self.ui.btn_2.clicked.connect(self.func_2)
-        self.ui.btn_3.clicked.connect(self.func_3)
-        self.ui.btn_4.clicked.connect(self.func_4)
-        self.ui.btn_5.clicked.connect(self.func_5)
-        self.ui.btn_6.clicked.connect(self.func_6)
-        self.ui.btn_7.clicked.connect(self.func_7)
-        self.ui.btn_8.clicked.connect(self.func_8)
-        self.ui.btn_9.clicked.connect(self.func_9)
-        self.ui.btn_0.clicked.connect(self.func_0)
+        self.ui.btn_1.clicked.connect(lambda: self.func_number(1))
+        self.ui.btn_2.clicked.connect(lambda: self.func_number(2))
+        self.ui.btn_3.clicked.connect(lambda: self.func_number(3))
+        self.ui.btn_4.clicked.connect(lambda: self.func_number(4))
+        self.ui.btn_5.clicked.connect(lambda: self.func_number(5))
+        self.ui.btn_6.clicked.connect(lambda: self.func_number(6))
+        self.ui.btn_7.clicked.connect(lambda: self.func_number(7))
+        self.ui.btn_8.clicked.connect(lambda: self.func_number(8))
+        self.ui.btn_9.clicked.connect(lambda: self.func_number(9))
+        self.ui.btn_0.clicked.connect(lambda: self.func_number(0))
         self.ui.btn_add.clicked.connect(self.func_add)
         self.ui.btn_minus.clicked.connect(self.func_minus)
         self.ui.btn_aster.clicked.connect(self.func_mult)
@@ -40,59 +40,14 @@ class SuperCalc(QMainWindow):
         self.ui.btn_rev.clicked.connect(self.func_rev)
         self.ui.btn_percent.clicked.connect(self.func_percent)
 
-    # Функции кнопок
-    def func_1(self):
+    # Функция кнопок с цифрами
+    def func_number(self, number):
         global buffer_s
-        buffer_s += '1'
-        self.ui.lcd.display(buffer_s)
-
-    def func_2(self):
-        global buffer_s
-        buffer_s += '2'
-        self.ui.lcd.display(buffer_s)
-
-    def func_3(self):
-        global buffer_s
-        buffer_s += '3'
-        self.ui.lcd.display(buffer_s)
-
-    def func_4(self):
-        global buffer_s
-        buffer_s += '4'
-        self.ui.lcd.display(buffer_s)
-
-    def func_5(self):
-        global buffer_s
-        buffer_s += '5'
-        self.ui.lcd.display(buffer_s)
-
-    def func_6(self):
-        global buffer_s
-        buffer_s += '6'
-        self.ui.lcd.display(buffer_s)
-
-    def func_7(self):
-        global buffer_s
-        buffer_s += '7'
-        self.ui.lcd.display(buffer_s)
-
-    def func_8(self):
-        global buffer_s
-        buffer_s += '8'
-        self.ui.lcd.display(buffer_s)
-
-    def func_9(self):
-        global buffer_s
-        buffer_s += '9'
-        self.ui.lcd.display(buffer_s)
-
-    def func_0(self):
-        global buffer_s
-        buffer_s += '0'
+        buffer_s += str(number)
         self.ui.lcd.display(buffer_s)
 
     def func_add(self):
-        global buffer_s, oper
+        global buffer_s, oper, labeltext
         oper = '+'
         if buffer_s != '':
             self.func_oper()
