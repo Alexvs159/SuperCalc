@@ -4,18 +4,16 @@ from window import Ui_MainWindow
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMainWindow
 
-isbuffer = False
-
-buffer_s = ''
-buffer1 = ''
-buffer2 = 0
-labeltext = []
-
-
 class SuperCalc(QMainWindow):
 
     def __init__(self):
         super(SuperCalc, self).__init__()
+        self.isbuffer = False
+        self.buffer_s = ''
+        self.buffer1 = ''
+        self.buffer2 = 0
+        self.labeltext = []
+        self.lastoper=''
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         # Привязка кнопок к функциям
@@ -29,10 +27,10 @@ class SuperCalc(QMainWindow):
         self.ui.btn_8.clicked.connect(lambda: self.func_number(8))
         self.ui.btn_9.clicked.connect(lambda: self.func_number(9))
         self.ui.btn_0.clicked.connect(lambda: self.func_number(0))
-        self.ui.btn_add.clicked.connect(self.func_add)
-        self.ui.btn_minus.clicked.connect(self.func_minus)
-        self.ui.btn_aster.clicked.connect(self.func_mult)
-        self.ui.btn_div.clicked.connect(self.func_div)
+        self.ui.btn_add.clicked.connect(lambda: self.func_btn_oper('+'))
+        self.ui.btn_minus.clicked.connect(lambda: self.func_btn_oper('-'))
+        self.ui.btn_aster.clicked.connect(lambda: self.func_btn_oper('*'))
+        self.ui.btn_div.clicked.connect(lambda: self.func_btn_oper('/'))
         self.ui.btn_calc.clicked.connect(self.func_equal)
         self.ui.btn_c.clicked.connect(self.func_clear)
         self.ui.btn_backspace.clicked.connect(self.func_backspace)
@@ -42,176 +40,134 @@ class SuperCalc(QMainWindow):
 
     # Функция кнопок с цифрами
     def func_number(self, number):
-        global buffer_s
-        buffer_s += str(number)
-        self.ui.lcd.display(buffer_s)
+        self.buffer_s += str(number)
+        self.ui.lcd.display(self.buffer_s)
 
-    def func_add(self):
-        global buffer_s, oper, labeltext
-        oper = '+'
-        if buffer_s != '':
-            self.func_oper()
+    # Функция кнопок операций +-*/
+    def func_btn_oper(self, oper):
+        if self.buffer_s != '':
+            self.func_oper(oper)
         else:
             labelstr = ''
-            labeltext[-1] = oper
-            for i in labeltext:
+            self.labeltext[-1] = oper
+            for i in self.labeltext:
                 labelstr += i + ' '
             self.ui.label.setText(labelstr)
 
-    def func_minus(self):
-        global buffer_s, oper, labeltext
-        oper = '-'
-        if buffer_s != '':
-            self.func_oper()
-        else:
-            labelstr = ''
-            labeltext[-1] = oper
-            for i in labeltext:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
-
-    def func_mult(self):
-        global buffer_s, oper
-        oper = '*'
-        if buffer_s != '':
-            self.func_oper()
-        else:
-            labelstr = ''
-            labeltext[-1] = oper
-            for i in labeltext:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
-
-    def func_div(self):
-        global oper
-        oper = '/'
-        if buffer_s != '':
-            self.func_oper()
-        else:
-            labelstr = ''
-            labeltext[-1] = oper
-            for i in labeltext:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
 
     def func_equal(self):
-        global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
-        if isbuffer and buffer_s != '':
-            if '.' in buffer_s:
-                buffer = float(buffer_s)
+        #global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
+        if self.isbuffer and self.buffer_s != '':
+            if '.' in self.buffer_s:
+                buffer = float(self.buffer_s)
             else:
-                buffer = int(buffer_s)
-            buffer2 = buffer
-            if oper == '+':
-                buffer1 += buffer
-            if oper == '-':
-                buffer1 -= buffer
-            if oper == '*':
-                buffer1 *= buffer
-            if oper == '/':
-                buffer1 /= buffer
+                buffer = int(self.buffer_s)
+            self.buffer2 = buffer
+            if self.lastoper == '+':
+                self.buffer1 += buffer
+            if self.lastoper == '-':
+                self.buffer1 -= buffer
+            if self.lastoper == '*':
+                self. buffer1 *= buffer
+            if self.lastoper == '/':
+                self.buffer1 /= buffer
 
-            isbuffer = False
-            buffer_s = str(buffer1)
-            self.ui.lcd.display(buffer_s)
-            labeltext.append(str(buffer2))
-            labeltext.append(oper)
+            self.isbuffer = False
+            self.buffer_s = str(self.buffer1)
+            self.ui.lcd.display(self.buffer_s)
+            self.labeltext.append(str(self.buffer2))
+            self.labeltext.append(self.lastoper)
             labelstr = ''
-            for i in labeltext[0:-1]:
+            for i in self.labeltext[0:-1]:
                 labelstr += i + ' '
             self.ui.label.setText(labelstr)
 
-        elif not isbuffer and buffer1 != '':
-            if oper == '+':
-                buffer1 += buffer2
-            if oper == '-':
-                buffer1 -= buffer2
-            if oper == '*':
-                buffer1 *= buffer2
-            if oper == '/':
-                buffer1 /= buffer2
-            buffer_s = str(buffer1)
-            self.ui.lcd.display(buffer_s)
-            labeltext.append(str(buffer1))
-            labeltext.append(oper)
+        elif not self.isbuffer and self.buffer1 != '':
+            if self.lastoper == '+':
+                self.buffer1 += self.buffer2
+            if self.lastoper == '-':
+                self.buffer1 -= self.buffer2
+            if self.lastoper == '*':
+                self.buffer1 *= self.buffer2
+            if self.lastoper == '/':
+                self.buffer1 /= self.buffer2
+            self.buffer_s = str(self.buffer1)
+            self.ui.lcd.display(self.buffer_s)
+            self.labeltext.append(str(self.buffer1))
+            self.labeltext.append(self.lastoper)
             labelstr = ''
-            for i in labeltext[0:-2]:
+            for i in self.labeltext[0:-2]:
                 labelstr += i + ' '
             self.ui.label.setText(labelstr)
 
-    def func_oper(self):
-        global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
-        if isbuffer:  # Проверяем наличие числа в буфере
-            if '.' in buffer_s:
-                buffer = float(buffer_s)
+    def func_oper(self, oper):
+        self.lastoper = oper
+        if self.isbuffer:  # Проверяем наличие числа в буфере
+            if '.' in self.buffer_s:
+                buffer = float(self.buffer_s)
             else:
             # if float(int(buffer_s)) < float(buffer_s):  # проверяем, float или int
             #     buffer = float(buffer_s)
             # else:
-                 buffer = int(buffer_s)
+                buffer = int(self.buffer_s)
             if oper == '+':
-                buffer1 += buffer
+                self.buffer1 += buffer
             if oper == '-':
-                buffer1 -= buffer
+                self.buffer1 -= buffer
             if oper == '*':
-                buffer1 *= buffer
+                self.buffer1 *= buffer
             if oper == '/':
-                buffer1 /= buffer
+                self.buffer1 /= buffer
         else:
-            if '.' in buffer_s:
-                buffer1 = float(buffer_s)
+            if '.' in self.buffer_s:
+                self.buffer1 = float(self.buffer_s)
             else:
             # if float(int(buffer_s)) < float(buffer_s):
             #     buffer1 = float(buffer_s)
             # else:
-                 buffer1 = int(buffer_s)
-            isbuffer = True
-        self.ui.lcd.display(buffer1)
-        labeltext.append(buffer_s)
-        labeltext.append(oper)
+                 self.buffer1 = int(self.buffer_s)
+            self.isbuffer = True
+        self.ui.lcd.display(self.buffer1)
+        self.labeltext.append(self.buffer_s)
+        self.labeltext.append(oper)
         labelstr = ''
-        for i in labeltext:
+        for i in self.labeltext:
             labelstr += i + ' '
         self.ui.label.setText(labelstr)
-        buffer_s = ''
+        self.buffer_s = ''
     def func_clear(self):
-        global buffer_s, buffer1, buffer2, isbuffer, labeltext
-        isbuffer = False
-        buffer_s = ''
-        buffer1 = ''
-        buffer2 = 0
-        labeltext = []
-        self.ui.lcd.display(buffer2)
+        self.isbuffer = False
+        self.buffer_s = ''
+        self.buffer1 = ''
+        self.buffer2 = 0
+        self.labeltext = []
+        self.ui.lcd.display(self.buffer2)
         self.ui.label.setText('')
     def func_backspace(self):
-        global buffer_s,buffer1
-        buffer_s = buffer_s[0:-1]
-        if float(int(buffer_s)) < float(buffer_s):  # проверяем, float или int
-            buffer1 = float(buffer_s)
+        self.buffer_s = self.buffer_s[0:-1]
+        if float(int(self.buffer_s)) < float(self.buffer_s):  # проверяем, float или int
+            self.buffer1 = float(self.buffer_s)
         else:
-            buffer1 = int(buffer_s)
-        self.ui.lcd.display(buffer_s)
+            self.buffer1 = int(self.buffer_s)
+        self.ui.lcd.display(self.buffer_s)
     def func_zpt(self):
-        global buffer_s, buffer1
-        if '.' not in buffer_s:
-            buffer_s+='.'
-            self.ui.lcd.display(buffer_s)
+        if '.' not in self.buffer_s:
+            self.buffer_s+='.'
+            self.ui.lcd.display(self.buffer_s)
     def func_rev(self):
-        global buffer_s
-        if buffer_s[0]=='-':
-            buffer_s = buffer_s[1::]
-            self.ui.lcd.display(buffer_s)
+        if self.buffer_s[0]=='-':
+            self.buffer_s = self.buffer_s[1::]
+            self.ui.lcd.display(self.buffer_s)
         else:
-            buffer_s = '-' + buffer_s
-            self.ui.lcd.display(buffer_s)
+            self.buffer_s = '-' + self.buffer_s
+            self.ui.lcd.display(self.buffer_s)
     def func_percent(self):
-        global buffer_s, buffer1
-        if '.' in buffer_s:
-            buffer = float(buffer_s)
+        if '.' in self.buffer_s:
+            buffer = float(self.buffer_s)
         else:
-            buffer = int(buffer_s)
-        buffer_s=str(buffer*(buffer1/100))
-        self.ui.lcd.display(buffer_s)
+            buffer = int(self.buffer_s)
+        self.buffer_s=str(buffer*(self.buffer1/100))
+        self.ui.lcd.display(self.buffer_s)
 
 
 
