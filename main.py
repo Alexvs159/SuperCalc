@@ -46,6 +46,7 @@ class SuperCalc(QMainWindow):
     # Функция кнопок операций +-*/
     def func_btn_oper(self, oper):
         if self.buffer_s != '':
+
             self.func_oper(oper)
         else:
             labelstr = ''
@@ -58,10 +59,10 @@ class SuperCalc(QMainWindow):
     def func_equal(self):
         #global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
         if self.isbuffer and self.buffer_s != '':
-            if '.' in self.buffer_s:
-                buffer = float(self.buffer_s)
-            else:
-                buffer = int(self.buffer_s)
+            # if self.func_isfloat(self.buffer_s):
+            #     buffer = float(self.buffer_s)
+            # else:
+            buffer = self.func_isfloat(self.buffer_s)
             self.buffer2 = buffer
             if self.lastoper == '+':
                 self.buffer1 += buffer
@@ -100,15 +101,12 @@ class SuperCalc(QMainWindow):
                 labelstr += i + ' '
             self.ui.label.setText(labelstr)
 
-    def func_oper(self, oper):
+    def func_oper_new(self, oper):
         self.lastoper = oper
         if self.isbuffer:  # Проверяем наличие числа в буфере
-            if '.' in self.buffer_s:
+            if self.func_isfloat(self.buffer_s): # Проверяем дробное или целое число
                 buffer = float(self.buffer_s)
             else:
-            # if float(int(buffer_s)) < float(buffer_s):  # проверяем, float или int
-            #     buffer = float(buffer_s)
-            # else:
                 buffer = int(self.buffer_s)
             if oper == '+':
                 self.buffer1 += buffer
@@ -119,12 +117,39 @@ class SuperCalc(QMainWindow):
             if oper == '/':
                 self.buffer1 /= buffer
         else:
-            if '.' in self.buffer_s:
+            if self.func_isfloat(self.buffer_s):
                 self.buffer1 = float(self.buffer_s)
             else:
-            # if float(int(buffer_s)) < float(buffer_s):
-            #     buffer1 = float(buffer_s)
-            # else:
+                 self.buffer1 = int(self.buffer_s)
+            self.isbuffer = True
+        self.ui.lcd.display(self.buffer1)
+        self.labeltext.append(self.buffer_s)
+        self.labeltext.append(oper)
+        labelstr = ''
+        for i in self.labeltext:
+            labelstr += i + ' '
+        self.ui.label.setText(labelstr)
+        self.buffer_s = ''
+
+    def func_oper(self, oper):
+        self.lastoper = oper
+        if self.isbuffer:  # Проверяем наличие числа в буфере
+            #if self.func_isfloat(self.buffer_s): # Проверяем дробное или целое число
+            #    buffer = float(self.buffer_s)
+            #else:
+            buffer = self.func_isfloat(self.buffer_s)
+            if oper == '+':
+                self.buffer1 += buffer
+            if oper == '-':
+                self.buffer1 -= buffer
+            if oper == '*':
+                self.buffer1 *= buffer
+            if oper == '/':
+                self.buffer1 /= buffer
+        else:
+            if self.func_isfloat(self.buffer_s):
+                self.buffer1 = float(self.buffer_s)
+            else:
                  self.buffer1 = int(self.buffer_s)
             self.isbuffer = True
         self.ui.lcd.display(self.buffer1)
@@ -141,7 +166,7 @@ class SuperCalc(QMainWindow):
         self.buffer1 = ''
         self.buffer2 = 0
         self.labeltext = []
-        self.ui.lcd.display(self.buffer2)
+        self.ui.lcd.display(0)
         self.ui.label.setText('')
     def func_backspace(self):
         self.buffer_s = self.buffer_s[0:-1]
@@ -151,7 +176,7 @@ class SuperCalc(QMainWindow):
             self.buffer1 = int(self.buffer_s)
         self.ui.lcd.display(self.buffer_s)
     def func_zpt(self):
-        if '.' not in self.buffer_s:
+        if not self.func_isfloat(self.buffer_s):
             self.buffer_s+='.'
             self.ui.lcd.display(self.buffer_s)
     def func_rev(self):
@@ -162,12 +187,16 @@ class SuperCalc(QMainWindow):
             self.buffer_s = '-' + self.buffer_s
             self.ui.lcd.display(self.buffer_s)
     def func_percent(self):
-        if '.' in self.buffer_s:
+        if self.func_isfloat(self.buffer_s):
             buffer = float(self.buffer_s)
         else:
             buffer = int(self.buffer_s)
         self.buffer_s=str(buffer*(self.buffer1/100))
         self.ui.lcd.display(self.buffer_s)
+
+    def func_isfloat(self,number):
+        return float(number) if '.' in number else int(number)
+
 
 
 
