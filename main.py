@@ -1,7 +1,7 @@
 import sys
 
 from window import Ui_MainWindow
-from PySide6 import QtWidgets
+#from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMainWindow
 
 class SuperCalc(QMainWindow):
@@ -57,7 +57,6 @@ class SuperCalc(QMainWindow):
 
 
     def func_equal(self):
-        #global oper, buffer_s, buffer1, buffer2, isbuffer, labeltext
         if self.isbuffer and self.buffer_s != '':
             # if self.func_isfloat(self.buffer_s):
             #     buffer = float(self.buffer_s)
@@ -147,10 +146,10 @@ class SuperCalc(QMainWindow):
             if oper == '/':
                 self.buffer1 /= buffer
         else:
-            if self.func_isfloat(self.buffer_s):
-                self.buffer1 = float(self.buffer_s)
-            else:
-                 self.buffer1 = int(self.buffer_s)
+            # if self.func_isfloat(self.buffer_s):
+            #     self.buffer1 = float(self.buffer_s)
+            # else:
+            self.buffer1 = self.func_isfloat(self.buffer_s)
             self.isbuffer = True
         self.ui.lcd.display(self.buffer1)
         self.labeltext.append(self.buffer_s)
@@ -170,13 +169,13 @@ class SuperCalc(QMainWindow):
         self.ui.label.setText('')
     def func_backspace(self):
         self.buffer_s = self.buffer_s[0:-1]
-        if float(int(self.buffer_s)) < float(self.buffer_s):  # проверяем, float или int
-            self.buffer1 = float(self.buffer_s)
-        else:
-            self.buffer1 = int(self.buffer_s)
+        # if float(int(self.buffer_s)) < float(self.buffer_s):  # проверяем, float или int
+        #     self.buffer1 = float(self.buffer_s)
+        # else:
+        self.buffer1 = self.func_isfloat(self.buffer_s)
         self.ui.lcd.display(self.buffer_s)
     def func_zpt(self):
-        if not self.func_isfloat(self.buffer_s):
+        if not '.' in self.buffer_s:
             self.buffer_s+='.'
             self.ui.lcd.display(self.buffer_s)
     def func_rev(self):
@@ -187,15 +186,20 @@ class SuperCalc(QMainWindow):
             self.buffer_s = '-' + self.buffer_s
             self.ui.lcd.display(self.buffer_s)
     def func_percent(self):
-        if self.func_isfloat(self.buffer_s):
-            buffer = float(self.buffer_s)
-        else:
-            buffer = int(self.buffer_s)
-        self.buffer_s=str(buffer*(self.buffer1/100))
-        self.ui.lcd.display(self.buffer_s)
+        # if self.func_isfloat(self.buffer_s):
+        #     buffer = float(self.buffer_s)
+        # else:
+        if self.isbuffer:
+            buffer = self.func_isfloat(self.buffer_s)
+            self.buffer_s=str(buffer*(self.buffer1/100))
+            self.ui.lcd.display(self.buffer_s)
 
-    def func_isfloat(self,number):
-        return float(number) if '.' in number else int(number)
+    def func_isfloat(self, number):
+        if '.' in number:
+            return float(number)
+        else:
+            return int(number)
+
 
 
 
