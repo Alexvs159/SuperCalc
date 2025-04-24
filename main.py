@@ -1,21 +1,19 @@
 import sys
-
 from window import Ui_MainWindow
-#from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMainWindow
+
 
 class SuperCalc(QMainWindow):
 
     def __init__(self):
         super(SuperCalc, self).__init__()
-        self.isbuffer = False
-        self.buffer_s = ''
-        self.buffer1 = ''
-        self.buffer2 = 0
-        self.number1 = None
-        self.number2 = None
+        self.display = ''
+        self.numbers = []
         self.labeltext = []
-        self.lastoper=''
+        self.last_operation = None
+        self.last_value = None
+        self.isPercentInput = False
+        self.isDigitInput = False
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         # Привязка кнопок к функциям
@@ -42,163 +40,94 @@ class SuperCalc(QMainWindow):
 
     # Функция кнопок с цифрами
     def func_number(self, number):
-        self.buffer_s += str(number)
-        self.ui.lcd.display(self.buffer_s)
+        if len(self.display) < 20:
+            self.display += str(number)
+            self.ui.lcd.display(self.display)
+            self.isDigitInput = True
 
     # Функция кнопок операций +-*/
     def func_btn_oper(self, oper):
-        if self.buffer_s != '':
-            self.func_oper(oper)
-        else:
-            labelstr = ''
-            self.labeltext[-1] = oper
-            for i in self.labeltext:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
-
-    def func_btn_oper_new(self, oper):
-        if self.number1 is not None:
-            self.number2 = self.func_isfloat(self.buffer_s)
-            self.func_oper_new(oper,self.number1,self.number2)
-        else:
-            self.number1 = self.func_isfloat(self.buffer_s)
-            labelstr = ''
-            self.labeltext[-1] = oper
-            for i in self.labeltext:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
-
+        self.last_operation = oper
+        if self.isDigitInput:
+            self.numbers.append(self.func_isfloat(self.display))
+            self.display = ''
+            self.isDigitInput = False
+            if len(self.numbers) > 1:
+                result = self.func_oper(oper, self.numbers[-2], self.numbers[-1])
+                self.numbers = [result]
+                self.display = str(self.numbers[-1])
+                self.ui.lcd.display(self.display)
+                self.display = ''
 
     def func_equal(self):
-        if self.isbuffer and self.buffer_s != '':
-            buffer = self.func_isfloat(self.buffer_s)
-            self.buffer2 = buffer
-            if self.lastoper == '+':
-                self.buffer1 += buffer
-            if self.lastoper == '-':
-                self.buffer1 -= buffer
-            if self.lastoper == '*':
-                self. buffer1 *= buffer
-            if self.lastoper == '/':
-                self.buffer1 /= buffer
-            self.isbuffer = False
-            self.buffer_s = str(self.buffer1)
-            self.ui.lcd.display(self.buffer_s)
-            self.labeltext.append(str(self.buffer2))
-            self.labeltext.append(self.lastoper)
-            labelstr = ''
-            for i in self.labeltext[0:-1]:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
-        elif not self.isbuffer and self.buffer1 != '':
-            if self.lastoper == '+':
-                self.buffer1 += self.buffer2
-            if self.lastoper == '-':
-                self.buffer1 -= self.buffer2
-            if self.lastoper == '*':
-                self.buffer1 *= self.buffer2
-            if self.lastoper == '/':
-                self.buffer1 /= self.buffer2
-            self.buffer_s = str(self.buffer1)
-            self.ui.lcd.display(self.buffer_s)
-            self.labeltext.append(str(self.buffer1))
-            self.labeltext.append(self.lastoper)
-            labelstr = ''
-            for i in self.labeltext[0:-2]:
-                labelstr += i + ' '
-            self.ui.label.setText(labelstr)
-
-    def func_oper_new(self, oper):
-        self.lastoper = oper
-        if self.isbuffer:  # Проверяем наличие числа в буфере
-            if self.func_isfloat(self.buffer_s): # Проверяем дробное или целое число
-                buffer = float(self.buffer_s)
+        if self.isDigitInput:
+            if self.isPercentInput is False:
+                self.numbers.append(self.func_isfloat(self.display))
             else:
-                buffer = int(self.buffer_s)
-            if oper == '+':
-                self.buffer1 += buffer
-            if oper == '-':
-                self.buffer1 -= buffer
-            if oper == '*':
-                self.buffer1 *= buffer
-            if oper == '/':
-                self.buffer1 /= buffer
-        else:
-            if self.func_isfloat(self.buffer_s):
-                self.buffer1 = float(self.buffer_s)
-            else:
-                 self.buffer1 = int(self.buffer_s)
-            self.isbuffer = True
-        self.ui.lcd.display(self.buffer1)
-        self.labeltext.append(self.buffer_s)
-        self.labeltext.append(oper)
-        labelstr = ''
-        for i in self.labeltext:
-            labelstr += i + ' '
-        self.ui.label.setText(labelstr)
-        self.buffer_s = ''
+                self.isPercentInput = False
+            result = self.func_oper(self.last_operation, self.numbers[-2], self.numbers[-1])
+            self.display = str(result)
+            self.ui.lcd.display(self.display)
+            self.last_value = self.numbers[-1]
+            self.display = ''
+            self.numbers = [result]
+            self.isDigitInput = False
+        elif self.last_value is not None:
+            result = self.func_oper(self.last_operation, self.last_value, self.numbers[-1])
+            self.numbers = [result]
+            self.display = str(result)
+            self.ui.lcd.display(self.display)
+            self.display = ''
 
-    def func_oper(self, oper):
-        self.lastoper = oper
-        if self.isbuffer:  # Проверяем наличие числа в буфере
-            buffer = self.func_isfloat(self.buffer_s)
-            if oper == '+':
-                self.buffer1 += buffer
-            if oper == '-':
-                self.buffer1 -= buffer
-            if oper == '*':
-                self.buffer1 *= buffer
-            if oper == '/':
-                self.buffer1 /= buffer
-        else:
-            self.buffer1 = self.func_isfloat(self.buffer_s)
-            self.isbuffer = True
-        self.ui.lcd.display(self.buffer1)
-        self.labeltext.append(self.buffer_s)
-        self.labeltext.append(oper)
-        labelstr = ''
-        for i in self.labeltext:
-            labelstr += i + ' '
-        self.ui.label.setText(labelstr)
-        self.buffer_s = ''
+    def func_oper(self, oper, num1, num2):
+        if oper == '+':
+            return num1 + num2
+        if oper == '-':
+            return num1 - num2
+        if oper == '*':
+            return num1 * num2
+        if oper == '/':
+            return num1 / num2
+
     def func_clear(self):
-        self.isbuffer = False
-        self.buffer_s = ''
-        self.buffer1 = ''
-        self.buffer2 = 0
-        self.labeltext = []
-        self.ui.lcd.display(0)
-        self.ui.label.setText('')
+        self.display = ''
+        self.ui.lcd.display('0')
+        self.numbers = []
+        self.last_value = None
+        self.isDigitInput = False
+        self.isPercentInput = False
+
     def func_backspace(self):
-        self.buffer_s = self.buffer_s[0:-1]
-        self.buffer1 = self.func_isfloat(self.buffer_s)
-        self.ui.lcd.display(self.buffer_s)
+        self.display = self.display[0:-1]
+        self.ui.lcd.display(self.display)
+
     def func_zpt(self):
-        if not '.' in self.buffer_s:
-            self.buffer_s+='.'
-            self.ui.lcd.display(self.buffer_s)
-    def func_rev(self): #изменение знака
-        if self.buffer_s[0]=='-':
-            self.buffer_s = self.buffer_s[1::]
-            self.ui.lcd.display(self.buffer_s)
+        if '.' not in self.display and len(self.display) < 20:
+            self.display += '.'
+            self.ui.lcd.display(self.display)
+
+    def func_rev(self):  # изменение знака
+        if self.display[0] == '-':
+            self.display = self.display[1::]
+            self.ui.lcd.display(self.display)
         else:
-            self.buffer_s = '-' + self.buffer_s
-            self.ui.lcd.display(self.buffer_s)
+            self.display = '-' + self.display
+            self.ui.lcd.display(self.display)
+
     def func_percent(self):
-        if self.isbuffer:
-            buffer = self.func_isfloat(self.buffer_s)
-            self.buffer_s=str(buffer*(self.buffer1/100))
-            self.ui.lcd.display(self.buffer_s)
-    def func_isfloat(self, number): # Определение типа числа
+        if len(self.numbers) > 0:
+            percent = self.numbers[-1] / 100 * self.func_isfloat(self.display)
+            self.numbers.append(percent)
+            self.isPercentInput = True
+            self.display = str(percent)
+            self.ui.lcd.display(self.display)
+            self.display = ''
+
+    def func_isfloat(self, number):  # Определение типа числа
         if '.' in number:
             return float(number)
         else:
             return int(number)
-
-
-
-
-
 
 
 if __name__ == "__main__":
