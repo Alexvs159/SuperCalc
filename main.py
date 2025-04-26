@@ -12,7 +12,6 @@ class SuperCalc(QMainWindow):
         self.labeltext = []
         self.last_operation = None
         self.last_value = None
-        self.isPercentInput = False
         self.isDigitInput = False
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -61,19 +60,17 @@ class SuperCalc(QMainWindow):
 
     def func_equal(self):
         if self.isDigitInput:
-            if self.isPercentInput is False:
+            if len(self.numbers) > 0:
                 self.numbers.append(self.func_isfloat(self.display))
-            else:
-                self.isPercentInput = False
-            result = self.func_oper(self.last_operation, self.numbers[-2], self.numbers[-1])
-            self.display = str(result)
-            self.ui.lcd.display(self.display)
-            self.last_value = self.numbers[-1]
-            self.display = ''
-            self.numbers = [result]
-            self.isDigitInput = False
+                result = self.func_oper(self.last_operation, self.numbers[-2], self.numbers[-1])
+                self.display = str(result)
+                self.ui.lcd.display(self.display)
+                self.last_value = self.numbers[-1]
+                self.display = ''
+                self.numbers = [result]
+                self.isDigitInput = False
         elif self.last_value is not None:
-            result = self.func_oper(self.last_operation, self.last_value, self.numbers[-1])
+            result = self.func_oper(self.last_operation, self.numbers[-1], self.last_value)
             self.numbers = [result]
             self.display = str(result)
             self.ui.lcd.display(self.display)
@@ -87,15 +84,15 @@ class SuperCalc(QMainWindow):
         if oper == '*':
             return num1 * num2
         if oper == '/':
-            return num1 / num2
+            return self.func_isfloat(num1 / num2)
 
     def func_clear(self):
         self.display = ''
         self.ui.lcd.display('0')
         self.numbers = []
         self.last_value = None
+        self.last_operation = None
         self.isDigitInput = False
-        self.isPercentInput = False
 
     def func_backspace(self):
         self.display = self.display[0:-1]
@@ -115,18 +112,28 @@ class SuperCalc(QMainWindow):
             self.ui.lcd.display(self.display)
 
     def func_percent(self):
-        if len(self.numbers) > 0:
+        if len(self.numbers) == 1:
             percent = self.numbers[-1] / 100 * self.func_isfloat(self.display)
-            self.numbers.append(percent)
-            self.isPercentInput = True
+            percent = self.func_isfloat(str(percent))
             self.display = str(percent)
             self.ui.lcd.display(self.display)
-            self.display = ''
 
     def func_isfloat(self, number):  # Определение типа числа
-        if '.' in number:
-            return float(number)
-        else:
+        if isinstance(number, (str)):
+            if '.' in number and float(number).is_integer() is False:
+                return float(number)
+            elif '.' in number:
+                return int(number.split('.')[0])
+            else:
+                return int(number)
+        if isinstance(number, float):
+            number_str = str(number)
+            whole, dot, fraction = number_str.partition('.')
+            if fraction == '0':
+                return int(whole)
+            else:
+                return float(number)
+        if isinstance(number, int):
             return int(number)
 
 
